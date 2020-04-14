@@ -1,13 +1,8 @@
-const MG = new KonvaMG();
-
-
-
-MG.Stage = new Konva.Stage({
+const MG = new KonvaMG({
     container: 'container',
     width: 800,
     height: 600
 });
-
 
 const vw = MG.Stage.getWidth();
 const vh = MG.Stage.getHeight();
@@ -20,15 +15,8 @@ const vh = MG.Stage.getHeight();
 
 
 // 開始時間, 形狀
-MG.key('0:0', { class: 'RegularPolygon' }, node => {
-
-    MG.init({
-        node,
-        // 標籤
-        deductiveName: '三角形',
-        // 圖層
-        layer: 2,
-
+MG.At({ time: '0:0', class: 'RegularPolygon', label: '三角形', layer: 2 }, object => {
+    MG.Add({
         x: vw / 2,
         y: vh / 2,
         sides: 3,
@@ -41,10 +29,7 @@ MG.key('0:0', { class: 'RegularPolygon' }, node => {
             y: 0
         }
     })
-    MG.tween({
-        start: 0,
-
-        node,
+    MG.Tween(0, {
         duration: 4.5,
         easing: Konva.Easings.StrongEaseOut,
         radius: 140,

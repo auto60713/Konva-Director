@@ -11,7 +11,6 @@ class KonvaMG {
         this.deductiveTime;
         this.deductiveColor;
         this.lastDeductiveTime;
-        this.Stage = null;
         this.Layers = [];
         this.audio = null;
         this.preview;
@@ -24,6 +23,7 @@ class KonvaMG {
         // 點擊事件
         this.clickEvent();
 
+        this.Stage = new Konva.Stage(d);
     }
 
 
@@ -115,7 +115,7 @@ class KonvaMG {
     }
 
     //演繹
-    key(t, d, deductive) {
+    At(d, deductive) {
 
         if (d.class == 'Free') this.freeMode = true;
         else this.freeMode = false;
@@ -126,15 +126,17 @@ class KonvaMG {
         // deductiveTime = 0.1;
 
         //開始時間
-        let startTime = t.split(":");
+        let startTime = d.time.split(":");
         let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
+
+        this.deductiveName = (d.label || "--");
 
         //為了建立timeLine 所有演繹必須"預演" 告知key演繹內容
         this.preview = true;
         deductive();
 
         // 建立演繹標籤
-        this.deductiveTag(startTime);
+        this.deductiveTag(startTime, d.layer);
 
         //找出演到最後的演繹
         this.lastDeductiveTime = parseFloat(startTime[1]) + this.deductiveTime;
@@ -143,18 +145,18 @@ class KonvaMG {
         //等時間開始真正演繹
         this.preview = false;
         this.freeMode = false;
-        setTimeout(() => { deductive(new Konva[d.class](this.attrs)) }, startSec * 1000);
+        this.node = new Konva[d.class](this.attrs);
+        const self = this;
+        setTimeout(() => { deductive(self) }, startSec * 1000);
     };
 
     //物件初始值
     //FreeMode沒有init
-    init(d) {
+    Add(d) {
         const self = this;
 
         //一開始先告知key演出訊息
         if (this.preview) {
-
-            this.deductiveName = (d.deductiveName || "--");
             this.deductiveColor = (d.fill || "#5B5B5B");
 
             //把attrs變成全域 讓key宣告Konva類別
@@ -177,7 +179,7 @@ class KonvaMG {
             }
 
             //freeMode是手動加入Layers, 宣告模式則是演繹時會自動加入
-            if (!this.freeMode) this.Layers[d.layer].add(d.node);
+            if (!this.freeMode) this.Layers[d.layer].add(this.node);
 
             //如果該物件沒有tween 需要draw來呈現
             this.Layers[d.layer].draw();
@@ -186,15 +188,16 @@ class KonvaMG {
     }
 
     //創建Konva.Tween並設定setTimeout
-    tween(d) {
-
+    Tween(start, d) {
         //告知key演出時間
         if (this.preview) {
-            this.deductiveTime = d.start + (d.duration || 1);
+            this.deductiveTime = start + (d.duration || 1);
             if (this.deductiveTime < 0.58) this.deductiveTime = 0.58;
         }
         else {
             setTimeout(() => {
+
+                d.node = this.node;
 
                 //暫停計畫
                 if (!this.tweensFreeze) {
@@ -203,7 +206,7 @@ class KonvaMG {
                 }
                 this.tweens_idx++;
 
-            }, d.start * 1000);
+            }, start * 1000);
         }
 
     }
@@ -277,10 +280,10 @@ class KonvaMG {
     // ============================================
 
     // 產生演繹標籤
-    deductiveTag(startTime) {
+    deductiveTag(startTime, layer) {
         //得知演繹內容後 依照內容 設定標籤樣式
         let event = document.createElement('div');
-        event.textContent = this.attrs.layer + ":" + this.deductiveName;
+        event.textContent = layer + ":" + this.deductiveName;
         event.classList.add("deductive");
         event.style.width = (this.deductiveTime * 100) + 'px';
         event.style.left = (parseFloat(startTime[1]) * 100) + 'px';
