@@ -1,15 +1,18 @@
+const MG = new KonvaMG();
 
-Stage = new Konva.Stage({
+
+
+MG.Stage = new Konva.Stage({
     container: 'container',
     width: 800,
     height: 600
 });
 
 
-const vw = Stage.getWidth();
-const vh = Stage.getHeight();
+const vw = MG.Stage.getWidth();
+const vh = MG.Stage.getHeight();
 
-// music({
+// KonvaMG.music({
 //     src: 'script/example/かめりあ - Singularity.mp3',
 //     volume: 0.1,
 //     currentTime: 31.4 -3.7
@@ -17,9 +20,9 @@ const vh = Stage.getHeight();
 
 
 // 開始時間, 形狀
-key('0:0', { class: 'RegularPolygon' }, node => {
+MG.key('0:0', { class: 'RegularPolygon' }, node => {
 
-    init({
+    MG.init({
         node,
         // 標籤
         deductiveName: '三角形',
@@ -38,7 +41,7 @@ key('0:0', { class: 'RegularPolygon' }, node => {
             y: 0
         }
     })
-    tween({
+    MG.tween({
         start: 0,
 
         node,
@@ -49,6 +52,9 @@ key('0:0', { class: 'RegularPolygon' }, node => {
     })
 })
 
+
+
+MG.start();
 
 
     // key('0:1.6', {class: 'Rect'}, function(c){
