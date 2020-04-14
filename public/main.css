@@ -1,54 +1,50 @@
+body {
+    font-family: monospace;
+    margin: 0;
+}
+#container {
+    display: inline-block;
+}
+#stopwatch {
+    position: relative;
+    left: 8px;
+}
 
+#timeLine {
+    position: relative;
+    left: 10px;
+}
+#timeLine .sec-box {
+    position: relative;
+    display: inline-block;
 
-    body{
-        font-family: monospace;
-        margin: 0;
-    }
-    #container{
-        display: inline-block;
-    }
-    #stopwatch{
-        position: relative;
-        left: 8px;
-    }
+    width: 99px;
+    border-bottom: 1px solid #000000;
+    border-left: 1px solid #000000;
+}
+#timeLine .sec-box span {
+    display: block;
+    margin-left: -4px;
+    margin-top: 14px;
+}
+#timeLine .deductive {
+    position: relative;
+    border: 1px solid #000000;
+    height: 15px;
+}
+#timeLine .deductive > span {
+    display: inline-block;
+    height: 100%;
+}
+#timeLine #timeRunner {
+    position: relative;
+    background-color: red;
+    width: 5px;
+    height: 10px;
+    margin-top: 15px;
+}
 
-    #timeLine{
-        position: relative;
-        left: 10px;
-  
-    }
-    #timeLine .sec-box{
-        position: relative;
-        display: inline-block;
-
-        width: 99px;
-        border-bottom: 1px solid #000000;
-        border-left:1px solid #000000;
-
-    }
-    #timeLine .sec-box span{
-        display: block;
-        margin-left: -4px;
-        margin-top: 14px;
-    }
-    #timeLine .deductive{
-        position: relative;
-        border: 1px solid #000000;
-        height: 15px;
-    }
-    #timeLine .deductive > span{
-        display: inline-block;
-        height: 100%;
-
-    }
-    #timeLine .timeRunner{
-        position: absolute;
-        background-color: red;
-        width: 5px;
-        height: 10px;
-
-    }
-
-
-
-
+#ruler {
+    position: absolute;
+    top: 0;
+}
