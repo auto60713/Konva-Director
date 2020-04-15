@@ -1,11 +1,5 @@
-const MG = new KonvaMG({
-    container: 'container',
-    width: 800,
-    height: 600
-});
 
-const vw = MG.Stage.getWidth();
-const vh = MG.Stage.getHeight();
+
 
 // KonvaMG.music({
 //     src: 'script/example/かめりあ - Singularity.mp3',
@@ -13,33 +7,66 @@ const vh = MG.Stage.getHeight();
 //     currentTime: 31.4 -3.7
 // });
 
+new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage => {
 
-// 開始時間, 形狀
-MG.At({ time: '0:0', class: 'RegularPolygon', label: '三角形', layer: 2 }, object => {
-    MG.Add({
-        x: vw / 2,
-        y: vh / 2,
-        sides: 3,
-        radius: 0,
-        fill: '#7AB383',
-        rotation: -180,
-        shadowColor: 'black',
-        shadowOffset: {
-            x: 0,
-            y: 0
-        }
-    })
-    MG.Tween(0, {
-        duration: 4.5,
-        easing: Konva.Easings.StrongEaseOut,
-        radius: 140,
-        rotation: 720
-    })
+    ThisStage
+        .at({ time: "00:00", add: "Rect", inLayer: 2 }, {
+            x: 50,
+            y: 20,
+            width: 100,
+            height: 50,
+            fill: 'green',
+            stroke: 'black',
+            strokeWidth: 2,
+            opacity: 0.2
+        })
+        .andTween({ after: "00:02" }, {
+            duration: 1,
+            x: 140,
+            y: 90,
+            fill: 'red',
+            rotation: Math.PI * 2,
+            opacity: 1,
+            strokeWidth: 6,
+            scaleX: 1.5
+        })
 })
 
 
 
-MG.start();
+// const MG = new KonvaMG({
+//     container: 'container',
+//     width: 800,
+//     height: 600
+// });
+
+// const vw = MG.Stage.getWidth();
+// const vh = MG.Stage.getHeight();
+
+// 開始時間, 形狀
+// MG.At({ time: '0:0', class: 'RegularPolygon', label: '三角形', layer: 2 }, object => {
+//     MG.Add({
+//         x: vw / 2,
+//         y: vh / 2,
+//         sides: 3,
+//         radius: 0,
+//         fill: '#7AB383',
+//         rotation: -180,
+//         shadowColor: 'black',
+//         shadowOffset: {
+//             x: 0,
+//             y: 0
+//         }
+//     })
+//     MG.Tween(0, {
+//         duration: 4.5,
+//         easing: Konva.Easings.StrongEaseOut,
+//         radius: 140,
+//         rotation: 720
+//     })
+// })
+
+// MG.start();
 
 
     // key('0:1.6', {class: 'Rect'}, function(c){

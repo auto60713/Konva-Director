@@ -1,379 +1,356 @@
-class KonvaMG {
+var KonvaMG = {
 
-    constructor(d) {
+    Stage: class {
 
-        this.UIfinish = false;
-        this.deductiveTimeMax = 0;
-        this.tweens = [];
-        this.tweens_idx = 0;
-        this.tweensFreeze = false;
-        this.deductiveName;
-        this.deductiveTime;
-        this.deductiveColor;
-        this.lastDeductiveTime;
-        this.Layers = [];
-        this.audio = null;
-        this.preview;
-        this.freeMode = false;
-        this.attrs;
+        constructor(attrs, callback) {
 
+            // 基本參數
+            this.tweens = [];
+            this.tweens_idx = 0;
+            this.tweensFreeze = false;
+
+            this.Layers = [];
+            this.audio = null;
+
+            // 最後演藝完成時間
+            this.lastDeductiveTime = 0;
+
+            this.UI = true;
+            this.UIfinish = false;
+
+            // 特殊參數
+            this.script = callback;
+            this.Stage = new Konva.Stage(attrs);
+
+
+            this.buildUI();
+            this.script(this);
+            this.runTimeLine();
+        }
 
         // 建立介面
-        this.buildUI();
-        // 點擊事件
-        this.clickEvent();
+        buildUI() {
 
-        this.Stage = new Konva.Stage(d);
-    }
+            if (this.UIfinish) return;
 
+            if (this.UI) {
 
-    // 建立介面
-    buildUI() {
+                const body = document.getElementsByTagName("body")[0];
 
-        if (this.UIfinish) return;
+                // 加入時間軸
+                const timeLine = document.createElement('div');
+                timeLine.setAttribute('id', 'timeLine');
 
-        const body = document.getElementsByTagName("body")[0];
+                body.appendChild(timeLine);
 
-        // 加入時間軸
-        const timeLine = document.createElement('div');
-        timeLine.setAttribute('id', 'timeLine');
+                const deductiveBox = document.createElement('div');
+                deductiveBox.setAttribute('id', 'deductiveBox');
 
-        body.appendChild(timeLine);
+                const ruler = document.createElement('div');
+                ruler.setAttribute('id', 'ruler');
 
-        const deductiveBox = document.createElement('div');
-        deductiveBox.setAttribute('id', 'deductiveBox');
+                const timeRunner = document.createElement('div');
+                timeRunner.setAttribute('id', 'timeRunner');
 
-        const ruler = document.createElement('div');
-        ruler.setAttribute('id', 'ruler');
+                timeLine.appendChild(deductiveBox);
+                timeLine.appendChild(ruler);
+                timeLine.appendChild(timeRunner);
 
-        const timeRunner = document.createElement('div');
-        timeRunner.setAttribute('id', 'timeRunner');
+                // 加入碼表
+                const stopwatch = document.createElement('div');
+                stopwatch.setAttribute('id', 'stopwatch');
+                stopwatch.textContent = `00:00`;
 
-        timeLine.appendChild(deductiveBox);
-        timeLine.appendChild(ruler);
-        timeLine.appendChild(timeRunner);
+                body.appendChild(stopwatch);
 
-        // 加入碼表
-        const stopwatch = document.createElement('div');
-        stopwatch.setAttribute('id', 'stopwatch');
-        stopwatch.textContent = `00:00`;
+                // 加入控制鍵
+                const ctrlButton = document.createElement('div');
+                ctrlButton.style.cssText = "margin-left: 8px";
 
-        body.appendChild(stopwatch);
+                let input = document.createElement('input');
+                input.setAttribute('type', 'button');
+                input.setAttribute('id', 'play');
+                input.setAttribute('value', 'Play');
+                ctrlButton.appendChild(input);
 
-        // 加入控制鍵
-        const ctrlButton = document.createElement('div');
-        ctrlButton.style.cssText = "margin-left: 8px";
+                input = document.createElement('input');
+                input.setAttribute('type', 'button');
+                input.setAttribute('id', 'pause');
+                input.setAttribute('value', 'Pause');
+                ctrlButton.appendChild(input);
 
-        let input = document.createElement('input');
-        input.setAttribute('type', 'button');
-        input.setAttribute('id', 'play');
-        input.setAttribute('value', 'Play');
-        ctrlButton.appendChild(input);
+                body.appendChild(ctrlButton);
 
-        input = document.createElement('input');
-        input.setAttribute('type', 'button');
-        input.setAttribute('id', 'pause');
-        input.setAttribute('value', 'Pause');
-        ctrlButton.appendChild(input);
-
-        body.appendChild(ctrlButton);
-
-        this.UIfinish = true;
-    }
-
-    // 點擊事件
-    clickEvent() {
-        //播放控制
-        document.getElementById('play').addEventListener('click', function () {
-
-            for (let i = 0; i < tweens.length; i++)
-                tweens[i].play();
-            tweensFreeze = false;
-            if (audio != null) audio.play();
-
-        }, false);
-
-        document.getElementById('pause').addEventListener('click', function () {
-
-            for (let i = 0; i < tweens.length; i++)
-                tweens[i].pause();
-            tweensFreeze = true;
-            if (audio != null) audio.pause();
-
-        }, false);
-
-        //點擊畫布 顯示時間與滑鼠位置
-        document.getElementById('container').addEventListener('click', function (event) {
-
-            const coords = "CurX: " + event.clientX + ", CurY: " + event.clientY;
-            const cueMessage = document.createElement('div');
-            cueMessage.textContent = seconds + "." + tens + "s, " + coords;
-            document.body.appendChild(cueMessage);
-
-        }, false);
-
-    }
-
-    //演繹
-    At(d, deductive) {
-
-        if (d.class == 'Free') this.freeMode = true;
-        else this.freeMode = false;
-
-        //每一個演繹初始化顏色與時間
-        // deductiveName = "(none)"
-        // deductiveColor = "#5B5B5B";
-        // deductiveTime = 0.1;
-
-        //開始時間
-        let startTime = d.time.split(":");
-        let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
-
-        this.deductiveName = (d.label || "--");
-
-        //為了建立timeLine 所有演繹必須"預演" 告知key演繹內容
-        this.preview = true;
-        deductive();
-
-        // 建立演繹標籤
-        this.deductiveTag(startTime, d.layer);
-
-        //找出演到最後的演繹
-        this.lastDeductiveTime = parseFloat(startTime[1]) + this.deductiveTime;
-        if (this.lastDeductiveTime > this.deductiveTimeMax) this.deductiveTimeMax = this.lastDeductiveTime;
-
-        //等時間開始真正演繹
-        this.preview = false;
-        this.freeMode = false;
-        this.node = new Konva[d.class](this.attrs);
-        const self = this;
-        setTimeout(() => { deductive(self) }, startSec * 1000);
-    };
-
-    //物件初始值
-    //FreeMode沒有init
-    Add(d) {
-        const self = this;
-
-        //一開始先告知key演出訊息
-        if (this.preview) {
-            this.deductiveColor = (d.fill || "#5B5B5B");
-
-            //把attrs變成全域 讓key宣告Konva類別
-            this.attrs = d;
-        }
-        else if (!this.tweensFreeze) {
-
-            // 如果沒有第i圖層
-            const id = "layer" + d.layer;
-
-            if (!document.querySelector("#" + id)) {
-                console.log(self.Layers);
-                this.Layers[d.layer] = new Konva.Layer();
-
-                this.Stage.add(this.Layers[d.layer]);
-
-                const rrr = document.querySelectorAll("canvas");
-                rrr[rrr.length - 1].id = id;
-                rrr[rrr.length - 1].style.zIndex = d.layer;
+                // 點擊事件
+                this.clickEvent();
             }
 
-            //freeMode是手動加入Layers, 宣告模式則是演繹時會自動加入
-            if (!this.freeMode) this.Layers[d.layer].add(this.node);
-
-            //如果該物件沒有tween 需要draw來呈現
-            this.Layers[d.layer].draw();
+            this.UIfinish = true;
         }
 
-    }
+        // 點擊事件
+        clickEvent() {
+            //播放控制
+            document.getElementById('play').addEventListener('click', function () {
 
-    //創建Konva.Tween並設定setTimeout
-    Tween(start, d) {
-        //告知key演出時間
-        if (this.preview) {
-            this.deductiveTime = start + (d.duration || 1);
-            if (this.deductiveTime < 0.58) this.deductiveTime = 0.58;
+                for (let i = 0; i < tweens.length; i++)
+                    tweens[i].play();
+                tweensFreeze = false;
+                if (audio != null) audio.play();
+
+            }, false);
+
+            document.getElementById('pause').addEventListener('click', function () {
+
+                for (let i = 0; i < tweens.length; i++)
+                    tweens[i].pause();
+                tweensFreeze = true;
+                if (audio != null) audio.pause();
+
+            }, false);
+
+            //點擊畫布 顯示時間與滑鼠位置
+            document.getElementById('container').addEventListener('click', function (event) {
+
+                const coords = "CurX: " + event.clientX + ", CurY: " + event.clientY;
+                const cueMessage = document.createElement('div');
+                cueMessage.textContent = seconds + "." + tens + "s, " + coords;
+                document.body.appendChild(cueMessage);
+
+            }, false);
+
         }
-        else {
+
+        // 加入物件
+        at(data, attrs) {
+
+            //開始時間
+            let startTime = data.time.split(":");
+            let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
+
+            if (this.UI) {
+                // 演藝開始時間
+                this.deductiveStart = startSec;
+                // 演藝名稱
+                this.deductiveName = data.label || "--";
+                console.log(data);
+                // 演藝標籤顏色
+                this.deductiveColor = attrs.fill || "#5B5B5B";
+            }
+
+            this.node = new Konva[data.add](attrs);
+            this.layer = data.inLayer;
+
             setTimeout(() => {
 
-                d.node = this.node;
+                // 如果沒有第i圖層
+                const id = "layer" + this.layer;
+
+                if (!document.querySelector("#" + id)) {
+
+                    this.Layers[this.layer] = new Konva.Layer();
+
+                    this.Stage.add(this.Layers[this.layer]);
+
+                    const canvas = document.querySelectorAll("canvas");
+                    canvas[canvas.length - 1].id = id;
+                    canvas[canvas.length - 1].style.zIndex = this.layer;
+                }
+
+                this.Layers[this.layer].add(this.node);
+                this.Layers[this.layer].draw();
+
+            }, startSec * 1000);
+
+
+            return this;
+        }
+
+        // 物件動畫
+        andTween(data, attrs) {
+
+            //開始時間
+            let startTime = data.after.split(":");
+            let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
+
+            if (this.UI) {
+                // 演藝時間
+                this.deductiveTime = startSec + attrs.duration;
+
+                // 建立演繹標籤
+                this.deductiveTag();
+
+                const lastTime = this.deductiveStart + this.deductiveTime;
+                // 更新最後演藝時間
+                if (lastTime > this.lastDeductiveTime) this.lastDeductiveTime = lastTime;
+            }
+
+            setTimeout(() => {
+
+                attrs.node = this.node;
 
                 //暫停計畫
                 if (!this.tweensFreeze) {
-                    this.tweens[this.tweens_idx] = new Konva.Tween(d);
+                    this.tweens[this.tweens_idx] = new Konva.Tween(attrs);
                     this.tweens[this.tweens_idx].play();
                 }
                 this.tweens_idx++;
 
-            }, start * 1000);
+            }, startSec * 1000);
+
+            return this;
         }
 
-    }
+        // 時間軸驅動
+        runTimeLine() {
 
+            // 所有演繹
+            const elesDeductive = document.getElementsByClassName("deductive");
 
+            // 建立時間軸
+            this.rulerUI(elesDeductive);
 
-    // 動畫開始
-    start() {
+            let runnerGOInterval, startTimerInterval;
 
-        // 所有演繹
-        const elesDeductive = document.getElementsByClassName("deductive");
+            if (elesDeductive.length != 0) {
 
-        // 建立時間軸
-        this.rulerUI(elesDeductive);
+                // 啟動時間
+                runnerGOInterval = setInterval(runnerGO, 10);
+                startTimerInterval = setInterval(startTimer, 10);
+            }
 
-        let runnerGOInterval, startTimerInterval;
+            // 跑者
+            let distance = 0;
 
-        if (elesDeductive.length != 0) {
+            function runnerGO() {
+                if (!this.tweensFreeze) {
 
-            // 啟動時間
-            runnerGOInterval = setInterval(runnerGO, 10);
-            startTimerInterval = setInterval(startTimer, 10);
-        }
+                    distance += 1;
+                    document.getElementById("timeRunner").style.left = distance + "px";
 
-        // 跑者
-        let distance = 0;
+                    if (distance > (document.getElementsByClassName("sec-box").length * 100)) {
 
-        function runnerGO() {
-            if (!this.tweensFreeze) {
-
-                distance += 1;
-                document.getElementById("timeRunner").style.left = distance + "px";
-
-                if (distance > (document.getElementsByClassName("sec-box").length * 100)) {
-
-                    clearInterval(startTimerInterval);
-                    clearInterval(runnerGOInterval);
-                    if (typeof audio !== 'undefined') audio.pause();
+                        clearInterval(startTimerInterval);
+                        clearInterval(runnerGOInterval);
+                        if (typeof audio !== 'undefined') audio.pause();
+                    }
                 }
+            }
+
+            //碼表
+            let seconds = 0;
+            let tens = 0;
+
+            function startTimer() {
+                if (!this.tweensFreeze) {
+                    tens++;
+
+                    if (tens > 99) {
+                        tens = 0;
+                        seconds++;
+                        if (seconds <= 9) seconds = "0" + seconds;
+                    }
+                    if (tens <= 9) tens = "0" + tens;
+
+                    document.getElementById("stopwatch").textContent = `${seconds}:${tens}`;
+                }
+            }
+
+        }
+
+        // 產生演繹標籤
+        deductiveTag() {
+            let tag = document.createElement('div');
+
+            tag.textContent = `${this.layer}:${this.deductiveName}`;
+            tag.style.left = (parseFloat(this.deductiveStart) * 100) + 'px';
+            tag.style.width = (this.deductiveTime * 100) + 'px';
+            tag.style.backgroundColor = this.deductiveColor;
+            tag.classList.add("deductive");
+
+            document.getElementById("deductiveBox").appendChild(tag);
+        }
+
+        // 畫尺規
+        rulerUI(elesDeductive) {
+
+            const allDeduH = elesDeductive.length * 17;
+
+            //根據最後演繹的時間設定timeLine長度
+            for (let i = 0; i < Math.ceil(this.lastDeductiveTime); i++) {
+
+                //秒(span)
+                const secSpan = document.createElement('span');
+                secSpan.textContent = i;
+                secSpan.style.marginTop = allDeduH + "px";
+
+                //刻度(div)
+                const secBox = document.createElement('div');
+                secBox.classList.add("sec-box");
+                secBox.classList.add("s" + i);
+                // secBox.style.top = -allDeduH + "px";
+                secBox.style.height = allDeduH + "px";
+
+                secBox.appendChild(secSpan);
+                document.getElementById("ruler").appendChild(secBox);
             }
         }
 
-        //碼表
-        let seconds = 0;
-        let tens = 0;
-
-        function startTimer() {
-            if (!this.tweensFreeze) {
-                tens++;
-
-                if (tens <= 9) tens = "0" + tens;
-                else if (tens > 99) {
-                    tens = 0;
-                    seconds++;
-                    if (seconds <= 9) seconds = "0" + seconds;
-                }
-                document.getElementById("stopwatch").textContent = `${seconds}:${tens}`;
-            }
-        }
-
-
-
     }
-
-
-
-
-
-    // ============================================
-    //         自家用
-    // ============================================
-
-    // 產生演繹標籤
-    deductiveTag(startTime, layer) {
-        //得知演繹內容後 依照內容 設定標籤樣式
-        let event = document.createElement('div');
-        event.textContent = layer + ":" + this.deductiveName;
-        event.classList.add("deductive");
-        event.style.width = (this.deductiveTime * 100) + 'px';
-        event.style.left = (parseFloat(startTime[1]) * 100) + 'px';
-        event.style.backgroundColor = this.deductiveColor;
-
-        //將標籤餵到object中 DOM準備好後在加到時間軸中
-        document.getElementById("deductiveBox").appendChild(event);
-    }
-
-
-    rulerUI(elesDeductive) {
-        const allDeduH = elesDeductive.length * 17;
-        //根據最後演繹的時間設定timeLine長度
-        for (let i = 0; i < Math.ceil(this.deductiveTimeMax); i++) {
-
-            //秒(span)
-            const secSpan = document.createElement('span');
-            secSpan.textContent = i;
-            secSpan.style.marginTop = allDeduH + "px";
-
-            //刻度(div)
-            const secBox = document.createElement('div');
-            secBox.classList.add("sec-box");
-            secBox.classList.add("s" + i);
-            // secBox.style.top = -allDeduH + "px";
-            secBox.style.height = allDeduH + "px";
-
-            secBox.appendChild(secSpan);
-            document.getElementById("ruler").appendChild(secBox);
-        }
-    }
-
-
-
-
 
 }
 
 
+    // (function () {
 
-(function () {
+    //     //創建HTML Audio
+    //     function music(d) {
 
-    //創建HTML Audio
-    function music(d) {
+    //         audio = new Audio(d.src);
+    //         if (typeof d.volume !== 'undefined') audio.volume = d.volume;
+    //         if (typeof d.currentTime !== 'undefined') audio.currentTime = d.currentTime;
+    //         audio.onloadeddata = function () {
+    //             audio.play();
+    //         };
+    //     }
 
-        audio = new Audio(d.src);
-        if (typeof d.volume !== 'undefined') audio.volume = d.volume;
-        if (typeof d.currentTime !== 'undefined') audio.currentTime = d.currentTime;
-        audio.onloadeddata = function () {
-            audio.play();
-        };
-    }
+    //     //dat.GUI
+    //     function gui(c) {
+    //         if (!preview) {
 
-    //dat.GUI
-    function gui(c) {
-        if (!preview) {
+    //             function Pos() { };
+    //             const pos = new Pos();
+    //             const GUI = new dat.GUI();
 
-            function Pos() { };
-            const pos = new Pos();
-            const GUI = new dat.GUI();
+    //             //x, y要特地用class裝起來 不然not work
+    //             if (typeof c.attrs.x !== 'undefined') {
+    //                 pos.x = c.attrs.x;
+    //                 GUI.add(pos, 'x').onChange(() => {
+    //                     doo(c.x(pos.x));
+    //                 });
+    //             }
+    //             if (typeof c.attrs.y !== 'undefined') {
+    //                 pos.y = c.attrs.y;
+    //                 GUI.add(pos, 'y').onChange(() => {
+    //                     doo(c.y(pos.y));
+    //                 });
+    //             }
 
-            //x, y要特地用class裝起來 不然not work
-            if (typeof c.attrs.x !== 'undefined') {
-                pos.x = c.attrs.x;
-                GUI.add(pos, 'x').onChange(() => {
-                    doo(c.x(pos.x));
-                });
-            }
-            if (typeof c.attrs.y !== 'undefined') {
-                pos.y = c.attrs.y;
-                GUI.add(pos, 'y').onChange(() => {
-                    doo(c.y(pos.y));
-                });
-            }
+    //             //雜魚屬性
+    //             if (typeof c.attrs.width !== 'undefined')
+    //                 GUI.add(c.attrs, 'width').onChange(() => { doo(c.width(c.attrs.width)) });
+    //             if (typeof c.attrs.height !== 'undefined')
+    //                 GUI.add(c.attrs, 'height').onChange(() => { doo(c.height(c.attrs.height)) });
+    //             if (typeof c.attrs.fill !== 'undefined')
+    //                 GUI.addColor(c.attrs, 'fill').onChange(() => { doo(c.fill(c.attrs.fill)) });
 
-            //雜魚屬性
-            if (typeof c.attrs.width !== 'undefined')
-                GUI.add(c.attrs, 'width').onChange(() => { doo(c.width(c.attrs.width)) });
-            if (typeof c.attrs.height !== 'undefined')
-                GUI.add(c.attrs, 'height').onChange(() => { doo(c.height(c.attrs.height)) });
-            if (typeof c.attrs.fill !== 'undefined')
-                GUI.addColor(c.attrs, 'fill').onChange(() => { doo(c.fill(c.attrs.fill)) });
+    //             function doo(callback) {
+    //                 callback;
+    //                 Layers[c.attrs.layer].draw();
+    //             }
 
-            function doo(callback) {
-                callback;
-                Layers[c.attrs.layer].draw();
-            }
+    //         }
+    //     }
 
-        }
-    }
-
-})();
+    // })();
 
