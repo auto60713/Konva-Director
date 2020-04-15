@@ -124,44 +124,43 @@ var KonvaMG = {
         // 加入物件
         at(data, attrs) {
 
-            //開始時間
+            // 物件加入時間
             let startTime = data.time.split(":");
             let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
 
+            this.deductiveStart = startSec;
+
             if (this.UI) {
-                // 演藝開始時間
-                this.deductiveStart = startSec;
                 // 演藝名稱
                 this.deductiveName = data.label || "--";
-                console.log(data);
                 // 演藝標籤顏色
                 this.deductiveColor = attrs.fill || "#5B5B5B";
             }
 
-            this.node = new Konva[data.add](attrs);
+            const node = new Konva[data.add](attrs);
+            this.node = node;
             this.layer = data.inLayer;
 
             setTimeout(() => {
 
                 // 如果沒有第i圖層
-                const id = "layer" + this.layer;
+                const id = "layer" + data.inLayer;
 
                 if (!document.querySelector("#" + id)) {
 
-                    this.Layers[this.layer] = new Konva.Layer();
+                    this.Layers[data.inLayer] = new Konva.Layer();
 
-                    this.Stage.add(this.Layers[this.layer]);
+                    this.Stage.add(this.Layers[data.inLayer]);
 
                     const canvas = document.querySelectorAll("canvas");
                     canvas[canvas.length - 1].id = id;
-                    canvas[canvas.length - 1].style.zIndex = this.layer;
+                    canvas[canvas.length - 1].style.zIndex = data.inLayer;
                 }
 
-                this.Layers[this.layer].add(this.node);
-                this.Layers[this.layer].draw();
+                this.Layers[data.inLayer].add(node);
+                this.Layers[data.inLayer].draw();
 
             }, startSec * 1000);
-
 
             return this;
         }
@@ -169,25 +168,30 @@ var KonvaMG = {
         // 物件動畫
         andTween(data, attrs) {
 
-            //開始時間
+            // 動畫在物件加入之後的等待時間
             let startTime = data.after.split(":");
             let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
 
-            if (this.UI) {
-                // 演藝時間
-                this.deductiveTime = startSec + attrs.duration;
+            // 動畫開始時間
+            const tweenTime = this.deductiveStart + startSec;
 
+            // 動畫演藝時間
+            this.deductiveTime = startSec + attrs.duration;
+
+            const lastTime = this.deductiveStart + this.deductiveTime;
+            // 更新最後演藝時間
+            if (lastTime > this.lastDeductiveTime) this.lastDeductiveTime = lastTime;
+
+            if (this.UI) {
                 // 建立演繹標籤
                 this.deductiveTag();
-
-                const lastTime = this.deductiveStart + this.deductiveTime;
-                // 更新最後演藝時間
-                if (lastTime > this.lastDeductiveTime) this.lastDeductiveTime = lastTime;
             }
+
+            const node = this.node;
 
             setTimeout(() => {
 
-                attrs.node = this.node;
+                attrs.node = node;
 
                 //暫停計畫
                 if (!this.tweensFreeze) {
@@ -196,7 +200,7 @@ var KonvaMG = {
                 }
                 this.tweens_idx++;
 
-            }, startSec * 1000);
+            }, tweenTime * 1000);
 
             return this;
         }
