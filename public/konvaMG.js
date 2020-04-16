@@ -2,29 +2,43 @@ var KonvaMG = {
 
     Build: class {
 
-        constructor({ UI, speed }, attrs, callback) {
+        constructor({ Setting: { speed, UI }, Music, Stage, Script }) {
 
-            // 基本參數
+            // 設定參數
+            this.speed = speed || 1;
+            this.UI = typeof UI !== 'undefined' ? UI : true;
+
+            // 內用變數
             this.tweens = [];
             this.pause = false;
             this.Layers = [];
             this.audio = null;
 
-            // 播放速度
-            this.speed = speed || 1;
-
             // 最後演藝完成時間
             this.lastDeductiveTime = 0;
 
-            this.UI = typeof UI !== 'undefined' ? UI : true;
-
             // 特殊參數
-            this.script = callback;
-            this.Stage = new Konva.Stage(attrs);
+            this.script = Script;
+            this.Stage = new Konva.Stage(Stage);
 
+            // 流程
             this.buildUI();
-            this.script(this);
-            this.runTimeLine();
+            this.clickEvent(Music);
+
+        }
+
+        //創建HTML Audio
+        music(d) {
+
+            const audio = new Audio(d.src)
+
+
+            this.audio = audio;
+            if (typeof d.volume !== 'undefined') audio.volume = d.volume;
+            if (typeof d.currentTime !== 'undefined') audio.currentTime = d.currentTime;
+            // audio.onloadeddata = function () {
+            audio.play();
+            // };
         }
 
         // 建立介面
@@ -78,41 +92,52 @@ var KonvaMG = {
 
             // body.appendChild(ctrlButton);
 
-            // // 點擊事件
-            // this.clickEvent();
-
         }
 
         // 點擊事件
-        clickEvent() {
+        clickEvent(Music) {
+            const self = this;
+
             //播放控制
-            document.getElementById('play').addEventListener('click', function () {
+            // document.getElementById('play').addEventListener('click', function () {
 
-                for (let i = 0; i < tweens.length; i++)
-                    tweens[i].play();
-                this.pause = false;
-                if (audio != null) audio.play();
+            //     for (let i = 0; i < tweens.length; i++)
+            //         tweens[i].play();
+            //     this.pause = false;
+            //     if (audio != null) audio.play();
 
-            }, false);
+            // }, false);
 
-            document.getElementById('pause').addEventListener('click', function () {
+            // document.getElementById('pause').addEventListener('click', function () {
 
-                for (let i = 0; i < tweens.length; i++)
-                    tweens[i].pause();
-                this.pause = true;
-                if (audio != null) audio.pause();
+            //     for (let i = 0; i < tweens.length; i++)
+            //         tweens[i].pause();
+            //     this.pause = true;
+            //     if (audio != null) audio.pause();
 
-            }, false);
+            // }, false);
 
-            //點擊畫布 顯示時間與滑鼠位置
-            document.getElementById('container').addEventListener('click', function (event) {
+            if (Music) {
+                //點擊畫布 顯示時間與滑鼠位置
+                document.getElementById('container').addEventListener('click', function (event) {
 
-                const coords = "CurX: " + event.clientX + ", CurY: " + event.clientY;
-                const cueMessage = document.createElement('div');
-                cueMessage.textContent = seconds + "." + tens + "s, " + coords;
-                document.body.appendChild(cueMessage);
 
-            }, false);
+                    self.music(Music);
+                    self.script(self);
+                    self.runTimeLine();
+
+                    // const coords = "CurX: " + event.clientX + ", CurY: " + event.clientY;
+                    // const cueMessage = document.createElement('div');
+                    // cueMessage.textContent = seconds + "." + tens + "s, " + coords;
+                    // document.body.appendChild(cueMessage);
+
+                }, false);
+            }
+            else {
+                self.script(self);
+                self.runTimeLine();
+            }
+
 
         }
 
@@ -286,7 +311,7 @@ var KonvaMG = {
 
                     clearInterval(startTimerInterval);
                     clearInterval(runnerGOInterval);
-                    if (typeof audio !== 'undefined') audio.pause();
+                    if (typeof self.audio !== 'undefined') self.audio.pause();
                 }
             }
 
@@ -318,16 +343,7 @@ var KonvaMG = {
 
     // (function () {
 
-    //     //創建HTML Audio
-    //     function music(d) {
 
-    //         audio = new Audio(d.src);
-    //         if (typeof d.volume !== 'undefined') audio.volume = d.volume;
-    //         if (typeof d.currentTime !== 'undefined') audio.currentTime = d.currentTime;
-    //         audio.onloadeddata = function () {
-    //             audio.play();
-    //         };
-    //     }
 
     //     //dat.GUI
     //     function gui(c) {
