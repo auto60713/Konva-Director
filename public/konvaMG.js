@@ -1,8 +1,8 @@
 var KonvaMG = {
 
-    Stage: class {
+    Build: class {
 
-        constructor(attrs, callback) {
+        constructor({ UI, speed }, attrs, callback) {
 
             // 基本參數
             this.tweens = [];
@@ -10,10 +10,13 @@ var KonvaMG = {
             this.Layers = [];
             this.audio = null;
 
+            // 播放速度
+            this.speed = speed || 1;
+
             // 最後演藝完成時間
             this.lastDeductiveTime = 0;
 
-            this.UI = true;
+            this.UI = typeof UI !== 'undefined' ? UI : true;
 
             // 特殊參數
             this.script = callback;
@@ -58,25 +61,25 @@ var KonvaMG = {
             body.appendChild(stopwatch);
 
             // 加入控制鍵
-            const ctrlButton = document.createElement('div');
-            ctrlButton.style.cssText = "margin-left: 8px";
+            // const ctrlButton = document.createElement('div');
+            // ctrlButton.style.cssText = "margin-left: 8px";
 
-            let input = document.createElement('input');
-            input.setAttribute('type', 'button');
-            input.setAttribute('id', 'play');
-            input.setAttribute('value', 'Play');
-            ctrlButton.appendChild(input);
+            // let input = document.createElement('input');
+            // input.setAttribute('type', 'button');
+            // input.setAttribute('id', 'play');
+            // input.setAttribute('value', 'Play');
+            // ctrlButton.appendChild(input);
 
-            input = document.createElement('input');
-            input.setAttribute('type', 'button');
-            input.setAttribute('id', 'pause');
-            input.setAttribute('value', 'Pause');
-            ctrlButton.appendChild(input);
+            // input = document.createElement('input');
+            // input.setAttribute('type', 'button');
+            // input.setAttribute('id', 'pause');
+            // input.setAttribute('value', 'Pause');
+            // ctrlButton.appendChild(input);
 
-            body.appendChild(ctrlButton);
+            // body.appendChild(ctrlButton);
 
-            // 點擊事件
-            this.clickEvent();
+            // // 點擊事件
+            // this.clickEvent();
 
         }
 
@@ -118,7 +121,7 @@ var KonvaMG = {
 
             // 物件加入時間
             let startTime = time.split(":");
-            let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
+            let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]) / this.speed;
 
             this.deductiveStart = startSec;
 
@@ -163,6 +166,8 @@ var KonvaMG = {
 
         // 物件動畫
         Tween(time, attrs) {
+
+            attrs.duration = attrs.duration / this.speed;
 
             // 動畫在物件加入之後的等待時間
             let startTime = time.split(":");
@@ -267,14 +272,17 @@ var KonvaMG = {
 
             // 跑者
             let distance = 0;
-
+            console.log(self.lastDeductiveTime);
             function runnerGO() {
                 if (self.pause) return;
 
                 distance += 1;
                 document.getElementById("timeRunner").style.left = distance + "px";
 
-                if (distance > (document.getElementsByClassName("sec-box").length * 100)) {
+                if (
+                    distance > (document.getElementsByClassName("sec-box").length * 100) ||
+                    distance > self.lastDeductiveTime * 100
+                ) {
 
                     clearInterval(startTimerInterval);
                     clearInterval(runnerGOInterval);
