@@ -1,51 +1,72 @@
+@font-face {
+    font-family: "Martin Amitrano";
+    src: url("script/example1/Martin Amitrano.ttf");
+}
+
 body {
     font-family: monospace;
     margin: 0;
 }
+
 #container {
     display: inline-block;
-}
-#stopwatch {
-    position: relative;
-    left: 8px;
+    background-color: #414141;
+    border: 1px solid #e8e8e8;
+    margin: 10px;
 }
 
 #timeLine {
-    position: relative;
-    left: 10px;
+    position: fixed;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    bottom: 0;
+    overflow-x: auto;
 }
-#timeLine .sec-box {
-    position: relative;
-    display: inline-block;
-
-    width: 99px;
-    border-bottom: 1px solid #000000;
-    border-left: 1px solid #000000;
-}
-#timeLine .sec-box span {
-    display: block;
-    margin-left: -4px;
-    margin-top: 14px;
-}
+/* 演藝標籤 */
 #timeLine .deductive {
     position: relative;
     border: 1px solid #000000;
     height: 15px;
     white-space: nowrap;
 }
-#timeLine .deductive > span {
-    display: inline-block;
-    height: 100%;
+
+/* 尺度 */
+#ruler {
+    white-space: nowrap;
+    position: absolute;
+    top: 0;
+    padding-right: 10px;
 }
-#timeLine #timeRunner {
+#ruler .sec-box {
+    position: relative;
+    display: inline-block;
+
+    width: 99px;
+    border-top: 1px solid #000000;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+}
+#ruler .s0 {
+    border-left: 1px solid #000000;
+}
+#ruler .sec-box span {
+    display: block;
+    margin-left: -4px;
+}
+
+/* 跑者 */
+#timeRunner {
     position: relative;
     background-color: red;
     width: 5px;
     height: 10px;
-    margin-top: 15px;
+    display: inline-block;
 }
 
-#ruler {
+/* 碼表 */
+#stopwatch {
     position: absolute;
-    top: 0;
+    left: 3px;
+    bottom: 14px;
 }

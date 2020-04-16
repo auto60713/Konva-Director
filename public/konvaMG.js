@@ -13,6 +13,7 @@ var KonvaMG = {
             this.pause = false;
             this.Layers = [];
             this.audio = null;
+            this.plated = false;
 
             // 最後演藝完成時間
             this.lastDeductiveTime = 0;
@@ -72,7 +73,7 @@ var KonvaMG = {
             stopwatch.setAttribute('id', 'stopwatch');
             stopwatch.textContent = `00:00`;
 
-            body.appendChild(stopwatch);
+            ruler.appendChild(stopwatch);
 
             // 加入控制鍵
             // const ctrlButton = document.createElement('div');
@@ -121,10 +122,15 @@ var KonvaMG = {
                 //點擊畫布 顯示時間與滑鼠位置
                 document.getElementById('container').addEventListener('click', function (event) {
 
+                    if (!self.plated) {
+                        self.music(Music);
+                        self.script(self);
+                        self.runTimeLine();
 
-                    self.music(Music);
-                    self.script(self);
-                    self.runTimeLine();
+                        self.plated = true;
+                    }
+
+
 
                     // const coords = "CurX: " + event.clientX + ", CurY: " + event.clientY;
                     // const cueMessage = document.createElement('div');

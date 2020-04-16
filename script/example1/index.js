@@ -3,11 +3,11 @@ new KonvaMG.Build({
         // UI: false,
         // speed: 2,
     },
-    Music: {
-        src: 'script/example1/かめりあ - Singularity.mp3',
-        volume: 0.1,
-        currentTime: 31.4 - 3.7
-    },
+    // Music: {
+    //     src: 'script/example1/かめりあ - Singularity.mp3',
+    //     volume: 0.1,
+    //     currentTime: 31.4 - 3.7
+    // },
     Stage: {
         container: 'container',
         width: 800,
@@ -19,7 +19,7 @@ new KonvaMG.Build({
         const vh = ThisStage.Stage.getHeight();
 
         ThisStage
-            .At({ time: "00:00", shapes: "RegularPolygon", layer: 2, label: "三角形" }, {
+            .At({ time: "00:20", shapes: "RegularPolygon", layer: 2, label: "三角形" }, {
                 x: vw / 2,
                 y: vh / 2,
                 sides: 3,
