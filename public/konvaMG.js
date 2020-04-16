@@ -6,9 +6,7 @@ var KonvaMG = {
 
             // 基本參數
             this.tweens = [];
-            this.tweens_idx = 0;
-            this.tweensFreeze = false;
-
+            this.pause = false;
             this.Layers = [];
             this.audio = null;
 
@@ -16,12 +14,10 @@ var KonvaMG = {
             this.lastDeductiveTime = 0;
 
             this.UI = true;
-            this.UIfinish = false;
 
             // 特殊參數
             this.script = callback;
             this.Stage = new Konva.Stage(attrs);
-
 
             this.buildUI();
             this.script(this);
@@ -31,61 +27,57 @@ var KonvaMG = {
         // 建立介面
         buildUI() {
 
-            if (this.UIfinish) return;
+            if (!this.UI) return;
 
-            if (this.UI) {
+            const body = document.getElementsByTagName("body")[0];
 
-                const body = document.getElementsByTagName("body")[0];
+            // 加入時間軸
+            const timeLine = document.createElement('div');
+            timeLine.setAttribute('id', 'timeLine');
 
-                // 加入時間軸
-                const timeLine = document.createElement('div');
-                timeLine.setAttribute('id', 'timeLine');
+            body.appendChild(timeLine);
 
-                body.appendChild(timeLine);
+            const deductiveBox = document.createElement('div');
+            deductiveBox.setAttribute('id', 'deductiveBox');
 
-                const deductiveBox = document.createElement('div');
-                deductiveBox.setAttribute('id', 'deductiveBox');
+            const ruler = document.createElement('div');
+            ruler.setAttribute('id', 'ruler');
 
-                const ruler = document.createElement('div');
-                ruler.setAttribute('id', 'ruler');
+            const timeRunner = document.createElement('div');
+            timeRunner.setAttribute('id', 'timeRunner');
 
-                const timeRunner = document.createElement('div');
-                timeRunner.setAttribute('id', 'timeRunner');
+            timeLine.appendChild(deductiveBox);
+            timeLine.appendChild(ruler);
+            timeLine.appendChild(timeRunner);
 
-                timeLine.appendChild(deductiveBox);
-                timeLine.appendChild(ruler);
-                timeLine.appendChild(timeRunner);
+            // 加入碼表
+            const stopwatch = document.createElement('div');
+            stopwatch.setAttribute('id', 'stopwatch');
+            stopwatch.textContent = `00:00`;
 
-                // 加入碼表
-                const stopwatch = document.createElement('div');
-                stopwatch.setAttribute('id', 'stopwatch');
-                stopwatch.textContent = `00:00`;
+            body.appendChild(stopwatch);
 
-                body.appendChild(stopwatch);
+            // 加入控制鍵
+            const ctrlButton = document.createElement('div');
+            ctrlButton.style.cssText = "margin-left: 8px";
 
-                // 加入控制鍵
-                const ctrlButton = document.createElement('div');
-                ctrlButton.style.cssText = "margin-left: 8px";
+            let input = document.createElement('input');
+            input.setAttribute('type', 'button');
+            input.setAttribute('id', 'play');
+            input.setAttribute('value', 'Play');
+            ctrlButton.appendChild(input);
 
-                let input = document.createElement('input');
-                input.setAttribute('type', 'button');
-                input.setAttribute('id', 'play');
-                input.setAttribute('value', 'Play');
-                ctrlButton.appendChild(input);
+            input = document.createElement('input');
+            input.setAttribute('type', 'button');
+            input.setAttribute('id', 'pause');
+            input.setAttribute('value', 'Pause');
+            ctrlButton.appendChild(input);
 
-                input = document.createElement('input');
-                input.setAttribute('type', 'button');
-                input.setAttribute('id', 'pause');
-                input.setAttribute('value', 'Pause');
-                ctrlButton.appendChild(input);
+            body.appendChild(ctrlButton);
 
-                body.appendChild(ctrlButton);
+            // 點擊事件
+            this.clickEvent();
 
-                // 點擊事件
-                this.clickEvent();
-            }
-
-            this.UIfinish = true;
         }
 
         // 點擊事件
@@ -95,7 +87,7 @@ var KonvaMG = {
 
                 for (let i = 0; i < tweens.length; i++)
                     tweens[i].play();
-                tweensFreeze = false;
+                this.pause = false;
                 if (audio != null) audio.play();
 
             }, false);
@@ -104,7 +96,7 @@ var KonvaMG = {
 
                 for (let i = 0; i < tweens.length; i++)
                     tweens[i].pause();
-                tweensFreeze = true;
+                this.pause = true;
                 if (audio != null) audio.pause();
 
             }, false);
@@ -122,43 +114,47 @@ var KonvaMG = {
         }
 
         // 加入物件
-        at(data, attrs) {
+        At({ time, shapes, layer, label }, attrs) {
 
             // 物件加入時間
-            let startTime = data.time.split(":");
+            let startTime = time.split(":");
             let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
 
             this.deductiveStart = startSec;
 
-            if (this.UI) {
-                // 演藝名稱
-                this.deductiveName = data.label || "--";
-                // 演藝標籤顏色
-                this.deductiveColor = attrs.fill || "#5B5B5B";
-            }
-
-            const node = new Konva[data.add](attrs);
+            const node = new Konva[shapes](attrs);
             this.node = node;
-            this.layer = data.inLayer;
+
+            if (this.UI) {
+                // 建立演繹標籤
+                this.deductiveTag({
+                    id: node._id,
+                    layer: layer || 1,
+                    label: label || "--",
+                    color: attrs.fill || "#5B5B5B",
+                    start: startSec,
+                    time: 0.1
+                });
+            }
 
             setTimeout(() => {
 
                 // 如果沒有第i圖層
-                const id = "layer" + data.inLayer;
+                const id = "layer" + layer;
 
                 if (!document.querySelector("#" + id)) {
 
-                    this.Layers[data.inLayer] = new Konva.Layer();
+                    this.Layers[layer] = new Konva.Layer();
 
-                    this.Stage.add(this.Layers[data.inLayer]);
+                    this.Stage.add(this.Layers[layer]);
 
                     const canvas = document.querySelectorAll("canvas");
                     canvas[canvas.length - 1].id = id;
-                    canvas[canvas.length - 1].style.zIndex = data.inLayer;
+                    canvas[canvas.length - 1].style.zIndex = layer;
                 }
 
-                this.Layers[data.inLayer].add(node);
-                this.Layers[data.inLayer].draw();
+                this.Layers[layer].add(node);
+                this.Layers[layer].draw();
 
             }, startSec * 1000);
 
@@ -166,113 +162,63 @@ var KonvaMG = {
         }
 
         // 物件動畫
-        andTween(data, attrs) {
+        Tween(time, attrs) {
 
             // 動畫在物件加入之後的等待時間
-            let startTime = data.after.split(":");
+            let startTime = time.split(":");
             let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
 
             // 動畫開始時間
             const tweenTime = this.deductiveStart + startSec;
 
             // 動畫演藝時間
-            this.deductiveTime = startSec + attrs.duration;
+            const deductiveTime = startSec + attrs.duration;
 
-            const lastTime = this.deductiveStart + this.deductiveTime;
             // 更新最後演藝時間
+            const lastTime = this.deductiveStart + deductiveTime;
             if (lastTime > this.lastDeductiveTime) this.lastDeductiveTime = lastTime;
+
+            const node = this.node;
 
             if (this.UI) {
                 // 建立演繹標籤
-                this.deductiveTag();
+                this.deductiveTag({ id: node._id, time: deductiveTime });
             }
-
-            const node = this.node;
 
             setTimeout(() => {
 
                 attrs.node = node;
 
-                //暫停計畫
-                if (!this.tweensFreeze) {
-                    this.tweens[this.tweens_idx] = new Konva.Tween(attrs);
-                    this.tweens[this.tweens_idx].play();
-                }
-                this.tweens_idx++;
+                const tween = new Konva.Tween(attrs);
+                tween.play();
 
             }, tweenTime * 1000);
 
             return this;
         }
 
-        // 時間軸驅動
-        runTimeLine() {
-
-            // 所有演繹
-            const elesDeductive = document.getElementsByClassName("deductive");
-
-            // 建立時間軸
-            this.rulerUI(elesDeductive);
-
-            let runnerGOInterval, startTimerInterval;
-
-            if (elesDeductive.length != 0) {
-
-                // 啟動時間
-                runnerGOInterval = setInterval(runnerGO, 10);
-                startTimerInterval = setInterval(startTimer, 10);
-            }
-
-            // 跑者
-            let distance = 0;
-
-            function runnerGO() {
-                if (!this.tweensFreeze) {
-
-                    distance += 1;
-                    document.getElementById("timeRunner").style.left = distance + "px";
-
-                    if (distance > (document.getElementsByClassName("sec-box").length * 100)) {
-
-                        clearInterval(startTimerInterval);
-                        clearInterval(runnerGOInterval);
-                        if (typeof audio !== 'undefined') audio.pause();
-                    }
-                }
-            }
-
-            //碼表
-            let seconds = 0;
-            let tens = 0;
-
-            function startTimer() {
-                if (!this.tweensFreeze) {
-                    tens++;
-
-                    if (tens > 99) {
-                        tens = 0;
-                        seconds++;
-                        if (seconds <= 9) seconds = "0" + seconds;
-                    }
-                    if (tens <= 9) tens = "0" + tens;
-
-                    document.getElementById("stopwatch").textContent = `${seconds}:${tens}`;
-                }
-            }
-
-        }
-
         // 產生演繹標籤
-        deductiveTag() {
-            let tag = document.createElement('div');
+        deductiveTag({ id, layer, label, color, start, time }) {
+            const tagId = `d-${id}`;
 
-            tag.textContent = `${this.layer}:${this.deductiveName}`;
-            tag.style.left = (parseFloat(this.deductiveStart) * 100) + 'px';
-            tag.style.width = (this.deductiveTime * 100) + 'px';
-            tag.style.backgroundColor = this.deductiveColor;
-            tag.classList.add("deductive");
+            // 由Tween更新長度
+            if (document.getElementsByClassName(tagId)[0]) {
 
-            document.getElementById("deductiveBox").appendChild(tag);
+                document.getElementsByClassName(tagId)[0].style.width = (time * 100) + 'px';
+            }
+            // 由At創立
+            else {
+                let tag = document.createElement('div');
+
+                tag.textContent = `${layer}:${label}`;
+                tag.style.left = (parseFloat(start) * 100) + 'px';
+                tag.style.width = (time * 100) + 'px';
+                tag.style.backgroundColor = color;
+                tag.classList.add("deductive");
+                tag.classList.add(tagId);
+
+                document.getElementById("deductiveBox").appendChild(tag);
+            }
         }
 
         // 畫尺規
@@ -298,6 +244,63 @@ var KonvaMG = {
                 secBox.appendChild(secSpan);
                 document.getElementById("ruler").appendChild(secBox);
             }
+        }
+
+        // 時間軸驅動
+        runTimeLine() {
+            const self = this;
+
+            // 所有演繹
+            const elesDeductive = document.getElementsByClassName("deductive");
+
+            // 建立時間軸
+            this.rulerUI(elesDeductive);
+
+            let runnerGOInterval, startTimerInterval;
+
+            if (elesDeductive.length != 0) {
+
+                // 啟動時間
+                runnerGOInterval = setInterval(runnerGO, 10);
+                startTimerInterval = setInterval(startTimer, 10);
+            }
+
+            // 跑者
+            let distance = 0;
+
+            function runnerGO() {
+                if (self.pause) return;
+
+                distance += 1;
+                document.getElementById("timeRunner").style.left = distance + "px";
+
+                if (distance > (document.getElementsByClassName("sec-box").length * 100)) {
+
+                    clearInterval(startTimerInterval);
+                    clearInterval(runnerGOInterval);
+                    if (typeof audio !== 'undefined') audio.pause();
+                }
+            }
+
+            //碼表
+            let seconds = 0;
+            let tens = 0;
+
+            function startTimer() {
+                if (self.pause) return;
+
+                tens++;
+
+                if (tens > 99) {
+                    tens = 0;
+                    seconds++;
+                    if (seconds <= 9) seconds = "0" + seconds;
+                }
+                if (tens <= 9) tens = "0" + tens;
+
+                document.getElementById("stopwatch").textContent = `${seconds}:${tens}`;
+            }
+
         }
 
     }

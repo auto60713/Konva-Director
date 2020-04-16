@@ -4,7 +4,7 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
     const vh = ThisStage.Stage.getHeight();
 
     ThisStage
-        .at({ time: "00:00", add: "RegularPolygon", inLayer: 2 }, {
+        .At({ time: "00:00", shapes: "RegularPolygon", layer: 2, label: "三角形" }, {
             x: vw / 2,
             y: vh / 2,
             sides: 3,
@@ -17,7 +17,7 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
                 y: 0
             }
         })
-        .andTween({ after: "00:00" }, {
+        .Tween("00:00", {
             duration: 4.5,
             easing: Konva.Easings.StrongEaseOut,
             radius: 140,
@@ -25,36 +25,37 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
         })
 
     ThisStage
-        .at({ time: "00:01.6", add: "Rect", inLayer: 1 }, {
+        .At({ time: "00:01.6", shapes: "Rect", layer: 1, label: "布條" }, {
             x: vw,
             y: vh / 2 - 45 - 10,
             width: 0,
             height: 90,
             fill: '#FCF9AA'
         })
-        .andTween({ after: "00:00" }, {
+        .Tween("00:00", {
             duration: 0.6,
+            easing: Konva.Easings.StrongEaseOut,
             width: vw,
             x: 0
         })
 
     ThisStage
-        .at({ time: "00:02", add: "Ring", inLayer: 0 }, {
+        .At({ time: "00:02", shapes: "Ring", layer: 0, label: "光環" }, {
             x: vw / 2,
             y: vh / 2,
             innerRadius: 0,
             outerRadius: 0,
             fill: '#8BCD96'
         })
-        .andTween({ after: "00:00" }, {
+        .Tween("00:00", {
             duration: 0.2,
             outerRadius: 180
         })
-        .andTween({ after: "00:00.2" }, {
+        .Tween("00:00.2", {
             duration: 0.2,
             innerRadius: 180
         })
-        .andTween({ after: "00:00.4" }, {
+        .Tween("00:00.4", {
             duration: 5.6,
             fill: '#AEFFBC',
             easing: Konva.Easings.Linear,
@@ -67,7 +68,7 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
     const size = 1000;
 
     ThisStage
-        .at({ time: "00:03.6", add: "Rect", inLayer: 3 }, {
+        .At({ time: "00:03.6", shapes: "Rect", layer: 3, label: "閃光" }, {
             fill: '#fff',
             x: -pos,
             y: pos,
@@ -75,11 +76,11 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
             height: size,
             rotation: -45
         })
-        .andTween({ after: "00:00" }, {
+        .Tween("00:00", {
             duration: 0.1,
             width: size
         })
-        .andTween({ after: "00:00.13" }, {
+        .Tween("00:00.13", {
             duration: 0.1,
             width: 0,
             x: -pos2,
@@ -87,7 +88,7 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
         })
 
     ThisStage
-        .at({ time: "00:03.7", add: "Text", inLayer: 2 }, {
+        .At({ time: "00:03.7", shapes: "Text", layer: 2, label: "文字" }, {
             X: vw / 2 - 128,
             y: vh / 2 - 92,
             text: 'OZEN',
@@ -98,19 +99,19 @@ new KonvaMG.Stage({ container: 'container', width: 800, height: 600 }, ThisStage
         })
 
     ThisStage
-        .at({ time: "00:04.5", add: "Wedge", inLayer: 0 }, {
+        .At({ time: "00:04.5", shapes: "Wedge", layer: 0, label: "圓餅圖" }, {
             x: vw / 2,
             y: vh / 2,
-            radius: 200,
+            radius: 198,
             angle: 0,
             fill: '#AEFFBC',
             rotation: -45
         })
-        .andTween({ after: "00:00" }, {
+        .Tween("00:00", {
             duration: 0.2,
             angle: 360
         })
-        .andTween({ after: "00:00.3" }, {
+        .Tween("00:00.3", {
             duration: 0.5,
             angle: 0,
             rotation: -45 + 360
