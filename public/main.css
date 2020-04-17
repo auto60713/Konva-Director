@@ -1,6 +1,6 @@
 @font-face {
     font-family: "Martin Amitrano";
-    src: url("script/example1/Martin Amitrano.ttf");
+    src: url("../script/example1/Martin Amitrano.ttf");
 }
 
 body {
@@ -41,7 +41,7 @@ body {
 #ruler .sec-box {
     position: relative;
     display: inline-block;
-
+height: 100%;
     width: 99px;
     border-top: 1px solid #000000;
     border-right: 1px solid #000000;
@@ -58,7 +58,7 @@ body {
 /* 跑者 */
 #timeRunner {
     position: relative;
-    background-color: red;
+    background-color: #ff6161;
     width: 5px;
     height: 10px;
     display: inline-block;
@@ -67,6 +67,6 @@ body {
 /* 碼表 */
 #stopwatch {
     position: absolute;
-    left: 3px;
-    bottom: 14px;
+    left: 6px;
+    bottom: 0;
 }

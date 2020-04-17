@@ -2,10 +2,15 @@ var KonvaMG = {
 
     Build: class {
 
-        constructor({ Setting: { speed, UI }, Music, Stage, Script }) {
+        constructor({ Setting: { speed, UI, startTime }, Music, Stage, Script }) {
 
             // 設定參數
             this.speed = speed || 1;
+
+            let startTime2 = typeof startTime !== 'undefined' ? startTime.split(":") : ["0","0"];
+            let startSec = parseInt(startTime2[0] * 60) + parseFloat(startTime2[1]);
+
+            this.startTime = startSec || 0;
             this.UI = typeof UI !== 'undefined' ? UI : true;
 
             // 內用變數
@@ -33,10 +38,9 @@ var KonvaMG = {
 
             const audio = new Audio(d.src)
 
-
             this.audio = audio;
             if (typeof d.volume !== 'undefined') audio.volume = d.volume;
-            if (typeof d.currentTime !== 'undefined') audio.currentTime = d.currentTime;
+            if (typeof d.currentTime !== 'undefined') audio.currentTime = d.currentTime + this.startTime;
             // audio.onloadeddata = function () {
             audio.play();
             // };
@@ -130,8 +134,6 @@ var KonvaMG = {
                         self.plated = true;
                     }
 
-
-
                     // const coords = "CurX: " + event.clientX + ", CurY: " + event.clientY;
                     // const cueMessage = document.createElement('div');
                     // cueMessage.textContent = seconds + "." + tens + "s, " + coords;
@@ -152,7 +154,9 @@ var KonvaMG = {
 
             // 物件加入時間
             let startTime = time.split(":");
-            let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]) / this.speed;
+            let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
+
+            const bbb = (startSec - this.startTime) / this.speed;
 
             this.deductiveStart = startSec;
 
@@ -190,7 +194,7 @@ var KonvaMG = {
                 this.Layers[layer].add(node);
                 this.Layers[layer].draw();
 
-            }, startSec * 1000);
+            }, bbb * 1000);
 
             return this;
         }
@@ -198,21 +202,33 @@ var KonvaMG = {
         // 物件動畫
         Tween(time, attrs) {
 
-            attrs.duration = attrs.duration / this.speed;
+            let aaa = "";
 
             // 動畫在物件加入之後的等待時間
             let startTime = time.split(":");
             let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
 
             // 動畫開始時間
-            const tweenTime = this.deductiveStart + startSec;
+            const tweenStartTime = this.deductiveStart + startSec;
 
-            // 動畫演藝時間
+            const bb = (tweenStartTime - this.startTime) / this.speed;
+
+            // 物件存在時間
             const deductiveTime = startSec + attrs.duration;
 
             // 更新最後演藝時間
             const lastTime = this.deductiveStart + deductiveTime;
             if (lastTime > this.lastDeductiveTime) this.lastDeductiveTime = lastTime;
+
+            // 如果開始時間已經超越演完時間
+            if (this.startTime >= tweenStartTime + attrs.duration) {
+                aaa = ["finish", 0];
+            }
+            // 如果開始時間介於開演與演完之間
+            else if (this.startTime >= tweenStartTime && attrs.duration > this.startTime - tweenStartTime) {
+                aaa = ["seek", this.startTime - tweenStartTime];
+            }
+            attrs.duration = attrs.duration / this.speed;
 
             const node = this.node;
 
@@ -226,9 +242,14 @@ var KonvaMG = {
                 attrs.node = node;
 
                 const tween = new Konva.Tween(attrs);
+
+                if (aaa !== "") {
+                    tween[aaa[0]](aaa[1])
+                }
                 tween.play();
 
-            }, tweenTime * 1000);
+
+            }, bb * 1000);
 
             return this;
         }
@@ -240,7 +261,7 @@ var KonvaMG = {
             // 由Tween更新長度
             if (document.getElementsByClassName(tagId)[0]) {
 
-                document.getElementsByClassName(tagId)[0].style.width = (time * 100) + 'px';
+                document.getElementsByClassName(tagId)[0].style.width = (time * 100) - 1 + 'px';
             }
             // 由At創立
             else {
@@ -248,8 +269,9 @@ var KonvaMG = {
 
                 tag.textContent = `${layer}:${label}`;
                 tag.style.left = (parseFloat(start) * 100) + 'px';
-                tag.style.width = (time * 100) + 'px';
+                tag.style.width = (time * 100) - 1 + 'px';
                 tag.style.backgroundColor = color;
+                // tag.style.backgroundColor = "#7acfff";
                 tag.classList.add("deductive");
                 tag.classList.add(tagId);
 
@@ -275,9 +297,10 @@ var KonvaMG = {
                 secBox.classList.add("sec-box");
                 secBox.classList.add("s" + i);
                 // secBox.style.top = -allDeduH + "px";
-                secBox.style.height = allDeduH + "px";
+                // secBox.style.height = allDeduH - 2 + "px";
 
                 secBox.appendChild(secSpan);
+                document.getElementById("ruler").style.height = allDeduH - 2 + "px";
                 document.getElementById("ruler").appendChild(secBox);
             }
         }
@@ -302,12 +325,12 @@ var KonvaMG = {
             }
 
             // 跑者
-            let distance = 0;
-            console.log(self.lastDeductiveTime);
+            let distance = this.startTime * 100;
+
             function runnerGO() {
                 if (self.pause) return;
 
-                distance += 1;
+                distance += self.speed;
                 document.getElementById("timeRunner").style.left = distance + "px";
 
                 if (
@@ -317,18 +340,19 @@ var KonvaMG = {
 
                     clearInterval(startTimerInterval);
                     clearInterval(runnerGOInterval);
-                    if (typeof self.audio !== 'undefined') self.audio.pause();
+                    if (typeof self.audio !== 'undefined' && self.audio !== null) self.audio.pause();
                 }
             }
 
             //碼表
-            let seconds = 0;
+
+            let seconds = this.startTime <= 9 ? "0" + this.startTime : this.startTime;
             let tens = 0;
 
             function startTimer() {
                 if (self.pause) return;
 
-                tens++;
+                tens = Math.floor(tens) + self.speed;
 
                 if (tens > 99) {
                     tens = 0;
