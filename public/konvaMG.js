@@ -7,7 +7,7 @@ var KonvaMG = {
             // 設定參數
             this.speed = speed || 1;
 
-            let startTime2 = typeof startTime !== 'undefined' ? startTime.split(":") : ["0","0"];
+            let startTime2 = typeof startTime !== 'undefined' ? startTime.split(":") : ["0", "0"];
             let startSec = parseInt(startTime2[0] * 60) + parseFloat(startTime2[1]);
 
             this.startTime = startSec || 0;
@@ -30,6 +30,36 @@ var KonvaMG = {
             // 流程
             this.buildUI();
             this.clickEvent(Music);
+
+        }
+
+        gui(node, label) {
+            const self = this;
+            if (this.GUI) this.GUI.destroy();
+
+            // setTimeout(() => {
+                self.GUI = new dat.GUI();
+                const aaaa = Object.assign({ label }, node.attrs);
+
+                // aaaa.label = label;
+
+                Object.keys(aaaa).forEach(key => {
+                    let mode = "add";
+
+                    if (["fill", "shadowColor"].includes(key)) {
+                        mode = "addColor";
+                    }
+
+                    self.GUI[mode](aaaa, key).onChange(() => {
+                        node[key](aaaa[key]);
+                        node.parent.draw();
+                    });
+
+                });
+            // }, 10);
+
+
+
 
         }
 
@@ -151,7 +181,7 @@ var KonvaMG = {
 
         // 加入物件
         At({ time, shapes, layer, label }, attrs) {
-
+            const self = this;
             // 物件加入時間
             let startTime = time.split(":");
             let startSec = parseInt(startTime[0] * 60) + parseFloat(startTime[1]);
@@ -161,6 +191,12 @@ var KonvaMG = {
             this.deductiveStart = startSec;
 
             const node = new Konva[shapes](attrs);
+
+            node.on('click', function () {
+                self.gui(node, label);
+            });
+
+
             this.node = node;
 
             if (this.UI) {
@@ -369,49 +405,3 @@ var KonvaMG = {
     }
 
 }
-
-
-    // (function () {
-
-
-
-    //     //dat.GUI
-    //     function gui(c) {
-    //         if (!preview) {
-
-    //             function Pos() { };
-    //             const pos = new Pos();
-    //             const GUI = new dat.GUI();
-
-    //             //x, y要特地用class裝起來 不然not work
-    //             if (typeof c.attrs.x !== 'undefined') {
-    //                 pos.x = c.attrs.x;
-    //                 GUI.add(pos, 'x').onChange(() => {
-    //                     doo(c.x(pos.x));
-    //                 });
-    //             }
-    //             if (typeof c.attrs.y !== 'undefined') {
-    //                 pos.y = c.attrs.y;
-    //                 GUI.add(pos, 'y').onChange(() => {
-    //                     doo(c.y(pos.y));
-    //                 });
-    //             }
-
-    //             //雜魚屬性
-    //             if (typeof c.attrs.width !== 'undefined')
-    //                 GUI.add(c.attrs, 'width').onChange(() => { doo(c.width(c.attrs.width)) });
-    //             if (typeof c.attrs.height !== 'undefined')
-    //                 GUI.add(c.attrs, 'height').onChange(() => { doo(c.height(c.attrs.height)) });
-    //             if (typeof c.attrs.fill !== 'undefined')
-    //                 GUI.addColor(c.attrs, 'fill').onChange(() => { doo(c.fill(c.attrs.fill)) });
-
-    //             function doo(callback) {
-    //                 callback;
-    //                 Layers[c.attrs.layer].draw();
-    //             }
-
-    //         }
-    //     }
-
-    // })();
-

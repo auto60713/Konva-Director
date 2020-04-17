@@ -1,7 +1,7 @@
 new KonvaMG.Build({
     Setting: {
         // UI: false,
-        speed: 2,
+        // speed: 2,
         // startTime: "00:03"
     },
     // Music: {
@@ -27,7 +27,7 @@ new KonvaMG.Build({
                 radius: 0,
                 fill: '#7AB383',
                 rotation: -180,
-                shadowColor: 'black',
+                shadowColor: '#000000',
                 shadowOffset: {
                     x: 0,
                     y: 0
