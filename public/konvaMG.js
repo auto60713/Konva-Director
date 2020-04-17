@@ -1,3 +1,23 @@
+
+var Timer = function (callback, delay) {
+    var timerId, start, remaining = delay;
+
+    this.pause = function () {
+        window.clearTimeout(timerId);
+        remaining -= Date.now() - start;
+    };
+
+    this.resume = function () {
+        start = Date.now();
+        window.clearTimeout(timerId);
+        timerId = window.setTimeout(callback, remaining);
+    };
+
+    this.resume();
+};
+
+
+
 var KonvaMG = {
 
     Build: class {
@@ -17,8 +37,10 @@ var KonvaMG = {
             this.tweens = [];
             this.pause = false;
             this.Layers = [];
+            this.timeoutList = [];
             this.audio = null;
             this.plated = false;
+            this.pause = false;
 
             // 最後演藝完成時間
             this.lastDeductiveTime = 0;
@@ -38,24 +60,24 @@ var KonvaMG = {
             if (this.GUI) this.GUI.destroy();
 
             // setTimeout(() => {
-                self.GUI = new dat.GUI();
-                const aaaa = Object.assign({ label }, node.attrs);
+            self.GUI = new dat.GUI();
+            const aaaa = Object.assign({ label }, node.attrs);
 
-                // aaaa.label = label;
+            // aaaa.label = label;
 
-                Object.keys(aaaa).forEach(key => {
-                    let mode = "add";
+            Object.keys(aaaa).forEach(key => {
+                let mode = "add";
 
-                    if (["fill", "shadowColor"].includes(key)) {
-                        mode = "addColor";
-                    }
+                if (["fill", "shadowColor"].includes(key)) {
+                    mode = "addColor";
+                }
 
-                    self.GUI[mode](aaaa, key).onChange(() => {
-                        node[key](aaaa[key]);
-                        node.parent.draw();
-                    });
-
+                self.GUI[mode](aaaa, key).onChange(() => {
+                    node[key](aaaa[key]);
+                    node.parent.draw();
                 });
+
+            });
             // }, 10);
 
 
@@ -110,22 +132,22 @@ var KonvaMG = {
             ruler.appendChild(stopwatch);
 
             // 加入控制鍵
-            // const ctrlButton = document.createElement('div');
-            // ctrlButton.style.cssText = "margin-left: 8px";
+            const ctrlButton = document.createElement('div');
+            ctrlButton.style.cssText = "margin-left: 10px";
 
-            // let input = document.createElement('input');
-            // input.setAttribute('type', 'button');
-            // input.setAttribute('id', 'play');
-            // input.setAttribute('value', 'Play');
-            // ctrlButton.appendChild(input);
+            let input = document.createElement('input');
+            input.setAttribute('type', 'button');
+            input.setAttribute('id', 'play');
+            input.setAttribute('value', 'Play');
+            ctrlButton.appendChild(input);
 
-            // input = document.createElement('input');
-            // input.setAttribute('type', 'button');
-            // input.setAttribute('id', 'pause');
-            // input.setAttribute('value', 'Pause');
-            // ctrlButton.appendChild(input);
+            input = document.createElement('input');
+            input.setAttribute('type', 'button');
+            input.setAttribute('id', 'pause');
+            input.setAttribute('value', 'Pause');
+            ctrlButton.appendChild(input);
 
-            // body.appendChild(ctrlButton);
+            body.appendChild(ctrlButton);
 
         }
 
@@ -134,23 +156,33 @@ var KonvaMG = {
             const self = this;
 
             //播放控制
-            // document.getElementById('play').addEventListener('click', function () {
+            document.getElementById('play').addEventListener('click', function () {
 
-            //     for (let i = 0; i < tweens.length; i++)
-            //         tweens[i].play();
-            //     this.pause = false;
-            //     if (audio != null) audio.play();
+                self.pause = false;
 
-            // }, false);
+                for (let i = 0; i < self.timeoutList.length; i++)
+                    self.timeoutList[i].resume();
 
-            // document.getElementById('pause').addEventListener('click', function () {
+                for (let i = 0; i < self.tweens.length; i++)
+                    self.tweens[i].play();
 
-            //     for (let i = 0; i < tweens.length; i++)
-            //         tweens[i].pause();
-            //     this.pause = true;
-            //     if (audio != null) audio.pause();
+                if (typeof self.audio !== 'undefined' && self.audio !== null) self.audio.paky();
 
-            // }, false);
+            }, false);
+
+            document.getElementById('pause').addEventListener('click', function () {
+
+                self.pause = true;
+
+                for (let i = 0; i < self.timeoutList.length; i++)
+                    self.timeoutList[i].pause();
+
+                for (let i = 0; i < self.tweens.length; i++)
+                    self.tweens[i].pause();
+
+                if (typeof self.audio !== 'undefined' && self.audio !== null) self.audio.pause();
+
+            }, false);
 
             if (Music) {
                 //點擊畫布 顯示時間與滑鼠位置
@@ -211,26 +243,30 @@ var KonvaMG = {
                 });
             }
 
-            setTimeout(() => {
 
-                // 如果沒有第i圖層
-                const id = "layer" + layer;
+            this.timeoutList.push(
+                new Timer(() => {
 
-                if (!document.querySelector("#" + id)) {
+                    // 如果沒有第i圖層
+                    const id = "layer" + layer;
 
-                    this.Layers[layer] = new Konva.Layer();
+                    if (!document.querySelector("#" + id)) {
 
-                    this.Stage.add(this.Layers[layer]);
+                        this.Layers[layer] = new Konva.Layer();
 
-                    const canvas = document.querySelectorAll("canvas");
-                    canvas[canvas.length - 1].id = id;
-                    canvas[canvas.length - 1].style.zIndex = layer;
-                }
+                        this.Stage.add(this.Layers[layer]);
 
-                this.Layers[layer].add(node);
-                this.Layers[layer].draw();
+                        const canvas = document.querySelectorAll("canvas");
+                        canvas[canvas.length - 1].id = id;
+                        canvas[canvas.length - 1].style.zIndex = layer;
+                    }
 
-            }, bbb * 1000);
+                    this.Layers[layer].add(node);
+                    this.Layers[layer].draw();
+
+                }, bbb * 1000)
+            );
+
 
             return this;
         }
@@ -238,6 +274,7 @@ var KonvaMG = {
         // 物件動畫
         Tween(time, attrs) {
 
+            const self = this;
             let aaa = "";
 
             // 動畫在物件加入之後的等待時間
@@ -273,19 +310,23 @@ var KonvaMG = {
                 this.deductiveTag({ id: node._id, time: deductiveTime });
             }
 
-            setTimeout(() => {
+            this.timeoutList.push(
+                new Timer(() => {
 
-                attrs.node = node;
+                    attrs.node = node;
 
-                const tween = new Konva.Tween(attrs);
+                    const tween = new Konva.Tween(attrs);
+                    self.tweens.push(tween);
 
-                if (aaa !== "") {
-                    tween[aaa[0]](aaa[1])
-                }
-                tween.play();
+                    if (aaa !== "") {
+                        tween[aaa[0]](aaa[1])
+                    }
+                    tween.play();
 
 
-            }, bb * 1000);
+                }, bb * 1000)
+            )
+
 
             return this;
         }
