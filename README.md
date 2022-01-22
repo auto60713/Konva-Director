@@ -14,3 +14,7 @@ A: 還真的沒有 或是都模組 無法客製化 大概只有基於element的a
 
 Q: 我該使用element還是canvas
 A:
+
+
+2022/01/22 競品 研究一下
+https://github.com/juliangarnier/anime
